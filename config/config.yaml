@@ -1,0 +1,56 @@
+# Runtime parameters, passed to the agent as Graph(config=...).
+# Separate from config/agent.yaml, which is the static manifest.
+#
+# Every key below has a reader. max_retry is read by the framework backbone when
+# it decides whether to retry; the routing block is read by
+# src/config_loader.py, which every node consults through BuildContextNode and
+# the output gate. Nothing here is declared for a future version — a declared
+# value with no reader looks like configuration and behaves like a comment.
+
+max_retry: 3
+timeout_s: 30
+
+security:
+  s3_gate_enabled: true
+
+# Routing taxonomy — the ALLOWED service categories and their target
+# queues/handlers. This is the ONLY source of routing destinations: the
+# classifier may choose among these ids and nothing else, and the output gate
+# refuses a response whose destination is not declared here. Override these
+# entries for customer-specific routing without any code change; when the block
+# is absent the built-in default in src/config_loader.py applies and the audit
+# trail records which of the two resolved the request.
+routing:
+  taxonomy_version: "svc-routing-v1"
+  default_category: "general_inquiry"
+  categories:
+    - id: "it_support"
+      label: "IT Support"
+      queue: "itsm_queue"
+      handler: "IT Service Desk"
+      default_priority: "medium"
+    - id: "hr_request"
+      label: "HR Request"
+      queue: "hrsd_queue"
+      handler: "HR Service Desk"
+      default_priority: "medium"
+    - id: "facilities"
+      label: "Facilities & Maintenance"
+      queue: "facilities_queue"
+      handler: "Facilities Management"
+      default_priority: "low"
+    - id: "finance_billing"
+      label: "Finance & Billing"
+      queue: "finance_queue"
+      handler: "Finance Support"
+      default_priority: "medium"
+    - id: "customer_complaint"
+      label: "Customer Complaint"
+      queue: "customer_care_queue"
+      handler: "Customer Care"
+      default_priority: "high"
+    - id: "general_inquiry"
+      label: "General Inquiry"
+      queue: "general_triage_queue"
+      handler: "General Triage"
+      default_priority: "low"
